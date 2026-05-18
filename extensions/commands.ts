@@ -33,6 +33,11 @@ interface SessionEntryLike {
   details?: LoadedMemoryDetailsLike;
 }
 
+interface SessionManagerLike {
+  getEntries: () => SessionEntryLike[];
+  getBranch: () => SessionEntryLike[];
+}
+
 // --- Helpers ---
 
 const errorMessage = (err: unknown): string => {
@@ -178,7 +183,7 @@ const loadMemoryIntoConversation = async (
   source: "load-memory" | "reload-memory",
   ctx: {
     isIdle: () => boolean;
-    sessionManager: { getEntries: () => SessionEntryLike[] };
+    sessionManager: SessionManagerLike;
     ui: { notify: (msg: string, level: string) => void };
   },
 ): Promise<void> => {
@@ -186,8 +191,8 @@ const loadMemoryIntoConversation = async (
     return;
   }
 
-  if (!forceRefresh && getLatestLoadedMemoryEntry(ctx.sessionManager.getEntries())) {
-    ctx.ui.notify("Memory is already loaded for this session. Use /reload-memory to refresh.", "info");
+  if (!forceRefresh && getLatestLoadedMemoryEntry(ctx.sessionManager.getBranch())) {
+    ctx.ui.notify("Memory is already loaded for this branch. Use /reload-memory to refresh.", "info");
     return;
   }
 
@@ -197,12 +202,21 @@ const loadMemoryIntoConversation = async (
     return;
   }
 
+  let refreshError: unknown;
   if (forceRefresh || !getCachedMemory()) {
-    await refreshMemoryCache(handles);
+    try {
+      await refreshMemoryCache(handles);
+    } catch (err) {
+      refreshError = err;
+    }
   }
 
   const message = buildExplicitMemoryMessage(getCachedMemoryParts(), source);
   if (!message) {
+    if (refreshError) {
+      ctx.ui.notify(`Failed to refresh Honcho memory: ${errorMessage(refreshError)}`, "error");
+      return;
+    }
     ctx.ui.notify("No Honcho memory was available to load.", "warning");
     return;
   }
@@ -228,7 +242,7 @@ export const registerCommands = (pi: ExtensionAPI): void => {
       const config = await resolveConfig();
       const handles = getHandles();
       const cached = getCachedMemory();
-      const loadedEntry = getLatestLoadedMemoryEntry(ctx.sessionManager.getEntries());
+      const loadedEntry = getLatestLoadedMemoryEntry(ctx.sessionManager.getBranch());
       const lines = buildStatusLines(config, handles, cached, loadedEntry);
       ctx.ui.notify(lines.join("\n"), "info");
     },

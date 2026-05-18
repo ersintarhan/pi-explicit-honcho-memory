@@ -144,8 +144,9 @@ export const refreshMemoryCache = async (handles: HonchoHandles): Promise<void> 
     });
 
     cachedMemory = buildCachedMemoryParts(ctx);
-  } catch {
-    // Keep stale cache on failure rather than clearing it
+  } catch (err) {
+    // Keep stale cache on failure rather than clearing it.
+    throw err;
   }
 };
 
@@ -199,7 +200,10 @@ export const extractConversationalPairs = (
     }
 
     const text = extractText(msg.content);
-    if (!text || text.length > maxMessageLength || text.includes("<pi_memory_context")) {
+    if (!text || text.length > maxMessageLength) {
+      continue;
+    }
+    if (text.trimStart().startsWith("<pi_memory_context")) {
       continue;
     }
 

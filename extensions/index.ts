@@ -54,7 +54,11 @@ export default function honcho(pi: ExtensionAPI): void {
 
         const handles = await bootstrap(pi, config, ctx.cwd);
         setStatus(ctx, "connected");
-        await refreshMemoryCache(handles);
+        try {
+          await refreshMemoryCache(handles);
+        } catch {
+          // Connection succeeded; treat cache warm-up failure as non-fatal.
+        }
       } catch {
         setStatus(ctx, "offline");
       }
