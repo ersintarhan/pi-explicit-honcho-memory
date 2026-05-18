@@ -28,7 +28,7 @@
     "release": "changeset publish"
   },
   "dependencies": {
-    "@honcho-ai/sdk": "^2.0.1"
+    "@honcho-ai/sdk": "^2.1.1"
   },
   "devDependencies": {
     "@changesets/cli": "^2.30.0",

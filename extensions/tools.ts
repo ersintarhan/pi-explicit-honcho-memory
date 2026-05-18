@@ -133,7 +133,7 @@ export const registerTools = (pi: ExtensionAPI): void => {
 
       await handles.aiPeer.conclusionsOf(handles.userPeer).create({
         content: params.content,
-        sessionId: handles.sessionKey,
+        sessionId: handles.session,
       });
 
       return {
