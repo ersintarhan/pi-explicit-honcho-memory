@@ -1,0 +1,56 @@
+{
+  "name": "@ersintarhan/pi-explicit-honcho-memory",
+  "version": "0.1.0",
+  "description": "Explicit-load Honcho memory extension for pi coding agent",
+  "keywords": [
+    "pi-package"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ersintarhan/pi-explicit-honcho-memory.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ersintarhan/pi-explicit-honcho-memory/issues"
+  },
+  "homepage": "https://github.com/ersintarhan/pi-explicit-honcho-memory#readme",
+  "type": "module",
+  "scripts": {
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt --write .",
+    "fmt:check": "oxfmt --check .",
+    "lint:github": "oxlint --format=github",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "changeset publish"
+  },
+  "dependencies": {
+    "@honcho-ai/sdk": "^2.0.1"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.30.0",
+    "lefthook": "^2.1.4",
+    "oxfmt": "^0.42.0",
+    "oxlint": "^1.57.0",
+    "oxlint-tsgolint": "^0.17.3",
+    "vitest": "^4.1.1"
+  },
+  "peerDependencies": {
+    "@mariozechner/pi-ai": "*",
+    "@mariozechner/pi-coding-agent": "*",
+    "@sinclair/typebox": "*"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "packageManager": "pnpm@11.0.0-dev.1005+sha512.91f84a392eea348ea4852a182912d2520273a4336f933b78cc44bc931eb999923c097e9433a9b355adc1f725725ea99082fc9f032a559df832632e764c92c798",
+  "pi": {
+    "extensions": [
+      "./extensions"
+    ]
+  }
+}

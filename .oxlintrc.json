@@ -1,0 +1,37 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["node", "eslint", "typescript", "oxc", "import", "promise"],
+  "categories": {
+    "correctness": "error",
+    "perf": "warn",
+    "style": "warn",
+    "suspicious": "warn"
+  },
+  "rules": {
+    "import/no-cycle": ["error", { "maxDepth": 3 }],
+    "import/no-nodejs-modules": "off",
+    "import/no-named-export": "off",
+    "import/prefer-default-export": "off",
+    "import/exports-last": "off",
+    "import/group-exports": "off",
+    "no-ternary": "off",
+    "no-magic-numbers": "off",
+    "no-continue": "off",
+    "max-statements": "off",
+    "max-params": "off",
+    "sort-keys": "off",
+    "sort-imports": "off",
+    "id-length": "off",
+    "promise/prefer-await-to-then": "off"
+  },
+  "settings": {},
+  "env": {
+    "builtin": true
+  },
+  "globals": {},
+  "ignorePatterns": [],
+  "options": {
+    "typeAware": true,
+    "typeCheck": true
+  }
+}
