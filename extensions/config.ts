@@ -45,6 +45,49 @@ interface ConfigFile {
 const CONFIG_PATH = join(homedir(), ".honcho", "config.json");
 const SESSION_STRATEGIES = ["repo", "git-branch", "directory"] as const;
 
+const normalizeOptionalString = (value: string | null | undefined): string | undefined => {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  const quoteWrapped =
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"));
+  const unwrapped = quoteWrapped ? trimmed.slice(1, -1).trim() : trimmed;
+
+  return unwrapped || undefined;
+};
+
+const normalizeBaseURL = (
+  envValue: string | null | undefined,
+  fileValue: string | null | undefined,
+): string | undefined => {
+  const fromEnv = normalizeOptionalString(envValue);
+  if (fromEnv) {
+    try {
+      return new URL(fromEnv).toString();
+    } catch {
+      console.error(`[pi-explicit-honcho-memory] ignoring invalid HONCHO_URL=${JSON.stringify(envValue)}`);
+    }
+  }
+
+  const fromFile = normalizeOptionalString(fileValue);
+  if (fromFile) {
+    try {
+      return new URL(fromFile).toString();
+    } catch {
+      console.error(`[pi-explicit-honcho-memory] ignoring invalid Honcho config endpoint=${JSON.stringify(fileValue)}`);
+    }
+  }
+
+  return undefined;
+};
+
 const isSessionStrategy = (value: string): value is HonchoSessionStrategy =>
   SESSION_STRATEGIES.some((strategy) => strategy === value);
 
@@ -104,11 +147,11 @@ export const resolveConfig = async (): Promise<HonchoExtensionConfig> => {
   const apiKey = process.env.HONCHO_API_KEY || file?.apiKey || undefined;
   const enabled = enabledEnv !== undefined ? enabledEnv === "true" : Boolean(apiKey);
 
-  const baseURL = process.env.HONCHO_URL || piHost?.endpoint || undefined;
-  const workspaceId = process.env.HONCHO_WORKSPACE_ID || piHost?.workspace || "pi";
+  const baseURL = normalizeBaseURL(process.env.HONCHO_URL, piHost?.endpoint);
+  const workspaceId = normalizeOptionalString(process.env.HONCHO_WORKSPACE_ID) || piHost?.workspace || "pi";
   const userPeerId =
-    process.env.HONCHO_PEER_NAME || file?.peerName || userInfo().username || "user";
-  const aiPeerId = process.env.HONCHO_AI_PEER || piHost?.aiPeer || "pi";
+    normalizeOptionalString(process.env.HONCHO_PEER_NAME) || file?.peerName || userInfo().username || "user";
+  const aiPeerId = normalizeOptionalString(process.env.HONCHO_AI_PEER) || piHost?.aiPeer || "pi";
   const sessionStrategy = normalizeSessionStrategy(
     process.env.HONCHO_SESSION_STRATEGY || piHost?.sessionStrategy,
   );

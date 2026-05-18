@@ -145,8 +145,11 @@ const buildConfigFile = (
     unknown
   >;
   piHost.sessionStrategy = normalizeSessionStrategy(sessionStrategy || existing.sessionStrategy);
-  if (endpoint) {
-    piHost.endpoint = endpoint;
+  const normalizedEndpoint = typeof endpoint === "string" ? endpoint.trim() : "";
+  if (normalizedEndpoint) {
+    piHost.endpoint = normalizedEndpoint;
+  } else {
+    delete piHost.endpoint;
   }
   hosts.pi = piHost;
   updated.hosts = hosts;
