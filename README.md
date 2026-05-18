@@ -4,16 +4,17 @@ Explicit-load memory extension for [pi](https://pi.dev) using [Honcho](https://h
 
 ![NPM Version](https://img.shields.io/npm/v/%40ersintarhan%2Fpi-explicit-honcho-memory)
 
-> [!WARNING]
-> This repo is a fork of `@agney/pi-honcho-memory` and is being adapted toward explicit `/load-memory` style memory loading instead of automatic prompt injection. Until that implementation lands, some code and docs may still reflect the original behavior.
+> [!NOTE]
+> This repo is a fork of `@agney/pi-honcho-memory` and now implements an explicit `/load-memory` flow. Honcho memory is cached at session start, but it is only added to LLM context when you explicitly request it.
 
 ## Features
 
-- **Automatic memory injection** — cached user profile and project summary injected into the system prompt with zero network latency
+- **Explicit memory loading** — use `/load-memory` to add cached Honcho user/project memory to the conversation once
+- **Refresh on demand** — use `/reload-memory` to fetch fresh Honcho context and replace the prior loaded memory block
+- **No automatic prompt injection** — memory is not appended to the system prompt on every turn
 - **Conversational persistence** — user/assistant messages saved to Honcho after each agent response
 - **Flexible session strategies** — choose repo, git-branch, or directory scoped memory
 - **LLM tools** — `honcho_search`, `honcho_chat`, `honcho_remember` for active memory operations
-- **Commands** — `/honcho-status`, `/honcho-setup`
 - **Graceful degradation** — pi works normally if Honcho is unavailable
 
 ## Install
@@ -72,7 +73,7 @@ Config file properties (`~/.honcho/config.json`):
 | `hosts.pi.aiPeer`            | `HONCHO_AI_PEER`             | AI peer name                                                           | `pi`               |
 | `hosts.pi.endpoint`          | `HONCHO_URL`                 | Honcho API base URL                                                    | default Honcho API |
 | `hosts.pi.sessionStrategy`   | `HONCHO_SESSION_STRATEGY`    | Session scope for memory sharing                                       | `repo`             |
-| `hosts.pi.contextTokens`     | `HONCHO_CONTEXT_TOKENS`      | Token budget requested from Honcho for injected project memory         | `1200`             |
+| `hosts.pi.contextTokens`     | `HONCHO_CONTEXT_TOKENS`      | Token budget requested from Honcho when refreshing cached memory       | `1200`             |
 | `hosts.pi.maxMessageLength`  | `HONCHO_MAX_MESSAGE_LENGTH`  | Maximum length of a synced user/assistant message before it is skipped | `8000`             |
 | `hosts.pi.searchLimit`       | `HONCHO_SEARCH_LIMIT`        | Maximum number of search results returned by `honcho_search`           | `8`                |
 | `hosts.pi.toolPreviewLength` | `HONCHO_TOOL_PREVIEW_LENGTH` | Character preview length per search result returned by `honcho_search` | `500`              |
@@ -89,10 +90,30 @@ All numeric options must be positive integers. Invalid values fall back to defau
 
 ## Commands
 
-| Command          | Description                       |
-| ---------------- | --------------------------------- |
-| `/honcho-status` | Show connection status and config |
-| `/honcho-setup`  | Interactive configuration wizard  |
+| Command          | Description                                                        |
+| ---------------- | ------------------------------------------------------------------ |
+| `/honcho-status` | Show connection status, cache info, and whether memory is loaded   |
+| `/honcho-setup`  | Interactive configuration wizard                                   |
+| `/load-memory`   | Load cached Honcho user/project memory into the current session    |
+| `/reload-memory` | Refresh Honcho memory and replace the loaded conversation block    |
+
+## Workflow
+
+1. Start pi with the extension enabled.
+2. Honcho connection and cache warm-up happen in the background.
+3. When you actually want memory in-context, run:
+
+```bash
+/load-memory
+```
+
+4. If the underlying Honcho memory changed, run:
+
+```bash
+/reload-memory
+```
+
+5. Use `honcho_search`, `honcho_chat`, and `honcho_remember` for deeper or explicit memory operations.
 
 ## Contributing
 

@@ -1,11 +1,11 @@
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { bootstrap, clearHandles, getHandles } from "./client.js";
 import { registerCommands } from "./commands.js";
 import { resolveConfig } from "./config.js";
 import {
   clearCachedMemory,
   flushPending,
-  getCachedMemory,
+  LOADED_MEMORY_CUSTOM_TYPE,
   refreshMemoryCache,
   saveMessages,
 } from "./memory.js";
@@ -17,6 +17,10 @@ interface StatusContext {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     theme: any;
   };
+}
+
+interface CustomMessageLike {
+  customType?: string;
 }
 
 const setStatus = (
@@ -35,19 +39,12 @@ const setStatus = (
 };
 
 export default function honcho(pi: ExtensionAPI): void {
-  let initializing: Promise<void> | null = null;
-
-  // --- Register tools & commands (always, so they can show helpful errors if not connected) ---
   registerTools(pi);
   registerCommands(pi);
 
-  /**
-   * Non-blocking bootstrap: kicks off Honcho initialization in the background.
-   * Sets status on completion. Never throws.
-   */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const backgroundInit = (ctx: { ui: any; cwd: string }): void => {
-    initializing = (async () => {
+    void (async () => {
       try {
         const config = await resolveConfig();
         if (!config.enabled || !config.apiKey) {
@@ -57,18 +54,12 @@ export default function honcho(pi: ExtensionAPI): void {
 
         const handles = await bootstrap(pi, config, ctx.cwd);
         setStatus(ctx, "connected");
-
-        // Prefetch memory context
         await refreshMemoryCache(handles);
       } catch {
         setStatus(ctx, "offline");
-      } finally {
-        initializing = null;
       }
     })();
   };
-
-  // --- Lifecycle events ---
 
   pi.on("session_start", (_event, ctx) => {
     clearHandles();
@@ -90,25 +81,27 @@ export default function honcho(pi: ExtensionAPI): void {
     backgroundInit(ctx);
   });
 
-  // --- Prompt path: inject cached memory into system prompt (0ms network) ---
-
-  pi.on("before_agent_start", async (event) => {
-    // Wait for initial bootstrap if it's still running on the very first prompt
-    if (initializing) {
-      await initializing;
+  // Keep only the latest explicit memory block in future LLM context.
+  pi.on("context", async (event) => {
+    let lastIndex = -1;
+    for (let i = 0; i < event.messages.length; i += 1) {
+      const message = event.messages[i] as CustomMessageLike;
+      if (message.customType === LOADED_MEMORY_CUSTOM_TYPE) {
+        lastIndex = i;
+      }
     }
 
-    const memoryText = getCachedMemory();
-    if (!memoryText) {
+    if (lastIndex === -1) {
       return;
     }
 
     return {
-      systemPrompt: `${event.systemPrompt}\n\n${memoryText}`,
+      messages: event.messages.filter((message, index) => {
+        const custom = message as CustomMessageLike;
+        return custom.customType !== LOADED_MEMORY_CUSTOM_TYPE || index === lastIndex;
+      }),
     };
   });
-
-  // --- Post-response: save messages + refresh cache ---
 
   pi.on("agent_end", async (event, ctx) => {
     const handles = getHandles();
@@ -123,8 +116,6 @@ export default function honcho(pi: ExtensionAPI): void {
       .then(() => setStatus(ctx, "connected"))
       .catch(() => setStatus(ctx, "offline"));
   });
-
-  // --- Flush on lifecycle edges ---
 
   pi.on("session_before_compact", async () => {
     await flushPending();

@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { createHash } from "node:crypto"; // eslint-disable-line import/no-nodejs-modules
 import type { HonchoSessionStrategy } from "./config.js";
 import { execGit } from "./git.js"; // eslint-disable-line import/no-named-export

@@ -4,6 +4,10 @@
 
 - Forked from `@agney/pi-honcho-memory` as the base for an explicit `/load-memory` Honcho extension.
 - Rebranded package metadata and repository references for `pi-explicit-honcho-memory`.
+- Replace automatic system-prompt injection with explicit `/load-memory` and `/reload-memory` commands.
+- Keep only the latest loaded memory block in future LLM context to avoid duplicate memory injections.
+- Skip re-uploading explicit `<pi_memory_context>` blocks back into Honcho conversation memory.
+- Update source imports and peer dependencies from `@mariozechner/*` to `@earendil-works/*`.
 
 ## 0.1.0
 

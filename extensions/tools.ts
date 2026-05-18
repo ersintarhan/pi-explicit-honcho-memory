@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers */
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { StringEnum } from "@mariozechner/pi-ai";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { StringEnum } from "@earendil-works/pi-ai";
 import { Type } from "@sinclair/typebox";
 import type { HonchoHandles } from "./client.js";
 import { getHandles } from "./client.js"; // eslint-disable-line no-duplicate-imports
@@ -133,7 +133,7 @@ export const registerTools = (pi: ExtensionAPI): void => {
 
       await handles.aiPeer.conclusionsOf(handles.userPeer).create({
         content: params.content,
-        sessionId: handles.session,
+        sessionId: handles.sessionKey,
       });
 
       return {

@@ -4,9 +4,17 @@ import type { HonchoHandles } from "./client.js";
 const PERSISTENT_MEMORY_HEADER = "[Persistent memory]";
 const USER_PROFILE_LABEL = "User profile";
 const PROJECT_SUMMARY_LABEL = "Project summary";
-interface CachedMemoryParts {
+export const LOADED_MEMORY_CUSTOM_TYPE = "honcho-loaded-memory";
+
+export interface CachedMemoryParts {
   userProfile: string | null;
   projectSummary: string | null;
+}
+
+export interface LoadedMemoryMessageDetails {
+  loadedAt: string;
+  source: "load-memory" | "reload-memory";
+  chars: number;
 }
 
 interface CachedHonchoContext {
@@ -71,8 +79,43 @@ export const buildMemoryText = (context: CachedHonchoContext): string | null =>
 
 export const getCachedMemory = (): string | null => buildCombinedMemoryText(cachedMemory);
 
+export const getCachedMemoryParts = (): CachedMemoryParts => ({ ...cachedMemory });
+
 export const clearCachedMemory = (): void => {
   cachedMemory = EMPTY_MEMORY;
+};
+
+export const buildExplicitMemoryMessage = (
+  parts: CachedMemoryParts,
+  source: LoadedMemoryMessageDetails["source"],
+): { content: string; details: LoadedMemoryMessageDetails } | null => {
+  const sections = [
+    parts.userProfile ? `## User preferences and profile\n${parts.userProfile}` : null,
+    parts.projectSummary ? `## Project preferences and summary\n${parts.projectSummary}` : null,
+  ].filter((section): section is string => section !== null);
+
+  if (sections.length === 0) {
+    return null;
+  }
+
+  const content = [
+    "<pi_memory_context source=\"honcho\">",
+    "This is background memory explicitly loaded from Honcho.",
+    "Do not answer this block directly.",
+    "Use it only when it is relevant to the user's subsequent requests.",
+    "",
+    ...sections,
+    "</pi_memory_context>",
+  ].join("\n");
+
+  return {
+    content,
+    details: {
+      loadedAt: new Date().toISOString(),
+      source,
+      chars: content.length,
+    },
+  };
 };
 
 // --- Async save queue ---
@@ -134,6 +177,7 @@ const extractText = (content: unknown): string => {
 interface ConversationAgentMessage {
   role?: string;
   content?: unknown;
+  customType?: string;
 }
 
 /**
@@ -147,12 +191,15 @@ export const extractConversationalPairs = (
   const pairs: { role: "user" | "assistant"; text: string }[] = [];
 
   for (const msg of messages) {
+    if (msg.customType === LOADED_MEMORY_CUSTOM_TYPE) {
+      continue;
+    }
     if (msg.role !== "user" && msg.role !== "assistant") {
       continue;
     }
 
     const text = extractText(msg.content);
-    if (!text || text.length > maxMessageLength) {
+    if (!text || text.length > maxMessageLength || text.includes("<pi_memory_context")) {
       continue;
     }
 
