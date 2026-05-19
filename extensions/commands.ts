@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
 import { mkdir, writeFile } from "node:fs/promises"; // eslint-disable-line import/no-nodejs-modules
 import { dirname } from "node:path"; // eslint-disable-line import/no-nodejs-modules
 import { bootstrap, clearHandles, getHandles } from "./client.js";
@@ -34,8 +34,8 @@ interface SessionEntryLike {
 }
 
 interface SessionManagerLike {
-  getEntries: () => SessionEntryLike[];
-  getBranch: () => SessionEntryLike[];
+  getEntries: () => unknown[];
+  getBranch: () => unknown[];
 }
 
 // --- Helpers ---
@@ -61,9 +61,19 @@ const memoryCacheLabel = (cached: string | null): string => {
   return "empty";
 };
 
-const getLatestLoadedMemoryEntry = (entries: SessionEntryLike[]): SessionEntryLike | null => {
+const asSessionEntryLike = (entry: unknown): SessionEntryLike | null => {
+  if (!entry || typeof entry !== "object") {
+    return null;
+  }
+  return entry as SessionEntryLike;
+};
+
+const getLatestLoadedMemoryEntry = (entries: unknown[]): SessionEntryLike | null => {
   for (let i = entries.length - 1; i >= 0; i -= 1) {
-    const entry = entries[i];
+    const entry = asSessionEntryLike(entries[i]);
+    if (!entry) {
+      continue;
+    }
     if (entry.type === "custom_message" && entry.customType === LOADED_MEMORY_CUSTOM_TYPE) {
       return entry;
     }
@@ -172,7 +182,7 @@ const testConnection = async (pi: ExtensionAPI, ctx: { ui: any; cwd: string }): 
   }
 };
 
-const ensureIdle = (ctx: { isIdle: () => boolean; ui: { notify: (msg: string, level: string) => void } }): boolean => {
+const ensureIdle = (ctx: ExtensionCommandContext): boolean => {
   if (ctx.isIdle()) {
     return true;
   }
@@ -180,21 +190,26 @@ const ensureIdle = (ctx: { isIdle: () => boolean; ui: { notify: (msg: string, le
   return false;
 };
 
+const getBranchEntries = (sessionManager: unknown): unknown[] => {
+  if (!sessionManager || typeof sessionManager !== "object") {
+    return [];
+  }
+
+  const maybeSessionManager = sessionManager as SessionManagerLike;
+  return typeof maybeSessionManager.getBranch === "function" ? maybeSessionManager.getBranch() : [];
+};
+
 const loadMemoryIntoConversation = async (
   pi: ExtensionAPI,
   forceRefresh: boolean,
   source: "load-memory" | "reload-memory",
-  ctx: {
-    isIdle: () => boolean;
-    sessionManager: SessionManagerLike;
-    ui: { notify: (msg: string, level: string) => void };
-  },
+  ctx: ExtensionCommandContext,
 ): Promise<void> => {
   if (!ensureIdle(ctx)) {
     return;
   }
 
-  if (!forceRefresh && getLatestLoadedMemoryEntry(ctx.sessionManager.getBranch())) {
+  if (!forceRefresh && getLatestLoadedMemoryEntry(getBranchEntries(ctx.sessionManager))) {
     ctx.ui.notify("Memory is already loaded for this branch. Use /reload-memory to refresh.", "info");
     return;
   }
@@ -205,7 +220,7 @@ const loadMemoryIntoConversation = async (
     return;
   }
 
-  let refreshError: unknown;
+  let refreshError: unknown = undefined;
   if (forceRefresh || !getCachedMemory()) {
     try {
       await refreshMemoryCache(handles);

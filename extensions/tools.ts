@@ -1,6 +1,5 @@
-/* eslint-disable no-magic-numbers */
+/* eslint-disable no-magic-numbers, new-cap */
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { StringEnum } from "@earendil-works/pi-ai";
 import { Type } from "@sinclair/typebox";
 import type { HonchoHandles } from "./client.js";
 import { getHandles } from "./client.js"; // eslint-disable-line no-duplicate-imports
@@ -30,6 +29,8 @@ const formatResults = (
   results
     .map((mem, idx) => `${idx + 1}. [${mem.peerId}] ${formatPreview(mem.content, previewLength)}`)
     .join("\n\n");
+
+const REASONING_LEVELS = ["minimal", "low", "medium", "high", "max"] as const;
 
 const resolveSession = async (
   handles: HonchoHandles,
@@ -74,17 +75,20 @@ export const registerTools = (pi: ExtensionAPI): void => {
       const handles = ensureConnected();
 
       const explicitSession = await resolveSession(handles, params.sessionId);
-      const results = explicitSession
-        ? await explicitSession.search(params.query, {
-            limit: handles.config.searchLimit,
-          })
-        : params.global === true
-          ? await handles.honcho.search(params.query, {
-              limit: handles.config.searchLimit,
-            })
-          : await handles.session.search(params.query, {
-              limit: handles.config.searchLimit,
-            });
+      let results: Awaited<ReturnType<HonchoHandles["session"]["search"]>> = [];
+      if (explicitSession) {
+        results = await explicitSession.search(params.query, {
+          limit: handles.config.searchLimit,
+        });
+      } else if (params.global === true) {
+        results = await handles.honcho.search(params.query, {
+          limit: handles.config.searchLimit,
+        });
+      } else {
+        results = await handles.session.search(params.query, {
+          limit: handles.config.searchLimit,
+        });
+      }
 
       if (results.length === 0) {
         return {
@@ -132,9 +136,8 @@ export const registerTools = (pi: ExtensionAPI): void => {
             "When true, reason over broader workspace memory instead of only the current session",
         }),
       ),
-      // eslint-disable-next-line new-cap
       reasoningLevel: Type.Optional(
-        StringEnum(["minimal", "low", "medium", "high", "max"] as const), // eslint-disable-line new-cap
+        Type.Union(REASONING_LEVELS.map((level) => Type.Literal(level))),
       ),
     }),
     async execute(_toolCallId, params, _signal, _onUpdate, _ctx) {
@@ -144,10 +147,10 @@ export const registerTools = (pi: ExtensionAPI): void => {
       const chatOptions: {
         target: HonchoHandles["userPeer"];
         session?: HonchoHandles["session"];
-        reasoningLevel: string;
+        reasoningLevel: (typeof REASONING_LEVELS)[number];
       } = {
         target: handles.userPeer,
-        reasoningLevel: params.reasoningLevel ?? "low",
+        reasoningLevel: (params.reasoningLevel ?? "low") as (typeof REASONING_LEVELS)[number],
       };
       if (explicitSession) {
         chatOptions.session = explicitSession;
@@ -201,18 +204,13 @@ export const registerTools = (pi: ExtensionAPI): void => {
       if (!summary) {
         return {
           content: [{ type: "text" as const, text: "No summary is available for this session." }],
-          details: { sessionId: session.id },
+          details: {},
         };
       }
 
       return {
         content: [{ type: "text" as const, text: summary.content }],
-        details: {
-          sessionId: session.id,
-          summaryType: summary.summaryType,
-          tokenCount: summary.tokenCount,
-          createdAt: summary.createdAt,
-        },
+        details: {},
       };
     },
   });

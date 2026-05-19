@@ -19,9 +19,14 @@ interface StatusContext {
   };
 }
 
-interface CustomMessageLike {
-  customType?: string;
-}
+const getCustomType = (message: unknown): string | undefined => {
+  if (!message || typeof message !== "object") {
+    return undefined;
+  }
+
+  const maybeCustom = message as { customType?: unknown };
+  return typeof maybeCustom.customType === "string" ? maybeCustom.customType : undefined;
+};
 
 const setStatus = (
   ctx: StatusContext,
@@ -71,26 +76,11 @@ export default function honcho(pi: ExtensionAPI): void {
     backgroundInit(ctx);
   });
 
-  pi.on("session_switch", async (_event, ctx) => {
-    await flushPending();
-    clearHandles();
-    clearCachedMemory();
-    backgroundInit(ctx);
-  });
-
-  pi.on("session_fork", async (_event, ctx) => {
-    await flushPending();
-    clearHandles();
-    clearCachedMemory();
-    backgroundInit(ctx);
-  });
-
   // Keep only the latest explicit memory block in future LLM context.
   pi.on("context", async (event) => {
     let lastIndex = -1;
     for (let i = 0; i < event.messages.length; i += 1) {
-      const message = event.messages[i] as CustomMessageLike;
-      if (message.customType === LOADED_MEMORY_CUSTOM_TYPE) {
+      if (getCustomType(event.messages[i]) === LOADED_MEMORY_CUSTOM_TYPE) {
         lastIndex = i;
       }
     }
@@ -100,10 +90,10 @@ export default function honcho(pi: ExtensionAPI): void {
     }
 
     return {
-      messages: event.messages.filter((message, index) => {
-        const custom = message as CustomMessageLike;
-        return custom.customType !== LOADED_MEMORY_CUSTOM_TYPE || index === lastIndex;
-      }),
+      messages: event.messages.filter(
+        (message, index) =>
+          getCustomType(message) !== LOADED_MEMORY_CUSTOM_TYPE || index === lastIndex,
+      ),
     };
   });
 
