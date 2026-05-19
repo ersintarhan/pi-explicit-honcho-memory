@@ -51,9 +51,13 @@ export const registerTools = (pi: ExtensionAPI): void => {
     async execute(_toolCallId, params, _signal, _onUpdate, _ctx) {
       const handles = ensureConnected();
 
-      const results = await handles.session.search(params.query, {
-        limit: handles.config.searchLimit,
-      });
+      const results = handles.config.globalQuery
+        ? await handles.honcho.search(params.query, {
+            limit: handles.config.searchLimit,
+          })
+        : await handles.session.search(params.query, {
+            limit: handles.config.searchLimit,
+          });
 
       if (results.length === 0) {
         return {
@@ -98,11 +102,19 @@ export const registerTools = (pi: ExtensionAPI): void => {
     async execute(_toolCallId, params, _signal, _onUpdate, _ctx) {
       const handles = ensureConnected();
 
-      const result = await handles.aiPeer.chat(params.query, {
+      const chatOptions: {
+        target: HonchoHandles["userPeer"];
+        session?: HonchoHandles["session"];
+        reasoningLevel: string;
+      } = {
         target: handles.userPeer,
-        session: handles.session,
         reasoningLevel: params.reasoningLevel ?? "low",
-      });
+      };
+      if (!handles.config.globalQuery) {
+        chatOptions.session = handles.session;
+      }
+
+      const result = await handles.aiPeer.chat(params.query, chatOptions);
 
       if (result === null) {
         return {

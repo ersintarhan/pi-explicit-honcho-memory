@@ -9,6 +9,7 @@
 - Skip re-uploading explicit `<pi_memory_context>` blocks back into Honcho conversation memory.
 - Update source imports and peer dependencies from `@mariozechner/*` to `@earendil-works/*`.
 - Switch `honcho_search` previews from head-only truncation to `400 head + 400 tail` formatting by default.
+- Add `HONCHO_GLOBAL_QUERY` / `hosts.pi.globalQuery` to let `honcho_search` and `honcho_chat` query broader workspace/global memory instead of the current session.
 
 ## 0.1.0
 

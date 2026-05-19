@@ -54,7 +54,7 @@ Docs: https://docs.honcho.dev/v3/documentation/introduction/vibecoding#agent-ski
 
 Config is read from (highest priority first):
 
-1. Environment variables: `HONCHO_API_KEY`, `HONCHO_URL`, `HONCHO_WORKSPACE_ID`, `HONCHO_PEER_NAME`, `HONCHO_AI_PEER`, `HONCHO_SESSION_STRATEGY`, `HONCHO_ENABLED`, `HONCHO_CONTEXT_TOKENS`, `HONCHO_MAX_MESSAGE_LENGTH`, `HONCHO_SEARCH_LIMIT`, `HONCHO_TOOL_PREVIEW_LENGTH`
+1. Environment variables: `HONCHO_API_KEY`, `HONCHO_URL`, `HONCHO_WORKSPACE_ID`, `HONCHO_PEER_NAME`, `HONCHO_AI_PEER`, `HONCHO_SESSION_STRATEGY`, `HONCHO_ENABLED`, `HONCHO_CONTEXT_TOKENS`, `HONCHO_MAX_MESSAGE_LENGTH`, `HONCHO_SEARCH_LIMIT`, `HONCHO_TOOL_PREVIEW_LENGTH`, `HONCHO_GLOBAL_QUERY`
 2. Config file: `~/.honcho/config.json`
 
 `HONCHO_SESSION_STRATEGY` / `hosts.pi.sessionStrategy` supports:
@@ -77,8 +77,9 @@ Config file properties (`~/.honcho/config.json`):
 | `hosts.pi.maxMessageLength`  | `HONCHO_MAX_MESSAGE_LENGTH`  | Maximum length of a synced user/assistant message before it is skipped | `8000`             |
 | `hosts.pi.searchLimit`       | `HONCHO_SEARCH_LIMIT`        | Maximum number of search results returned by `honcho_search`           | `8`                |
 | `hosts.pi.toolPreviewLength` | `HONCHO_TOOL_PREVIEW_LENGTH` | Head/tail preview length per search result returned by `honcho_search` | `400`              |
+| `hosts.pi.globalQuery`       | `HONCHO_GLOBAL_QUERY`        | If `true`, `honcho_search` and `honcho_chat` query workspace/global memory instead of the current session | `false`            |
 
-All numeric options must be positive integers. Invalid values fall back to defaults.
+All numeric options must be positive integers. Invalid values fall back to defaults. `HONCHO_GLOBAL_QUERY` accepts common boolean values such as `true/false`, `1/0`, `yes/no`, and `on/off`.
 
 ## Tools
 
@@ -87,6 +88,8 @@ All numeric options must be positive integers. Invalid values fall back to defau
 | `honcho_search`   | Search persistent memory for prior conversations and decisions |
 | `honcho_chat`     | Ask Honcho to reason over memory for deeper questions          |
 | `honcho_remember` | Save a durable fact, preference, or decision                   |
+
+By default, `honcho_search` and `honcho_chat` are current-session scoped. Set `HONCHO_GLOBAL_QUERY=true` to make both tools query broader workspace/global memory instead of passing the current session.
 
 ## Commands
 

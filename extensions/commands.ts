@@ -99,6 +99,7 @@ const buildStatusLines = (
   lines.push(`User peer:    ${config.userPeerId}`);
   lines.push(`AI peer:      ${config.aiPeerId}`);
   lines.push(`Session mode: ${getSessionStrategyLabel(config.sessionStrategy)}`);
+  lines.push(`Query scope:  ${config.globalQuery ? "Global" : "Session"}`);
   lines.push(`Context toks: ${config.contextTokens}`);
   lines.push(`Msg max len:  ${config.maxMessageLength}`);
   lines.push(`Search limit: ${config.searchLimit}`);

@@ -21,6 +21,7 @@ export interface HonchoExtensionConfig {
   maxMessageLength: number;
   searchLimit: number;
   toolPreviewLength: number;
+  globalQuery: boolean;
 }
 
 interface ConfigFileHost {
@@ -32,6 +33,7 @@ interface ConfigFileHost {
   maxMessageLength?: number;
   searchLimit?: number;
   toolPreviewLength?: number;
+  globalQuery?: boolean;
 }
 
 interface ConfigFile {
@@ -109,6 +111,27 @@ export const normalizePositiveInteger = (
   return fallback;
 };
 
+export const normalizeBoolean = (
+  value: boolean | string | null | undefined,
+  fallback: boolean,
+): boolean => {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (["true", "1", "yes", "on"].includes(normalized)) {
+      return true;
+    }
+    if (["false", "0", "no", "off"].includes(normalized)) {
+      return false;
+    }
+  }
+
+  return fallback;
+};
+
 export const readConfigFile = async (): Promise<ConfigFile | null> => {
   try {
     const raw = await readFile(CONFIG_PATH, "utf-8");
@@ -171,6 +194,10 @@ export const resolveConfig = async (): Promise<HonchoExtensionConfig> => {
     process.env.HONCHO_TOOL_PREVIEW_LENGTH || piHost?.toolPreviewLength,
     DEFAULT_TOOL_PREVIEW_LENGTH,
   );
+  const globalQuery = normalizeBoolean(
+    process.env.HONCHO_GLOBAL_QUERY ?? piHost?.globalQuery,
+    false,
+  );
 
   return {
     enabled,
@@ -184,6 +211,7 @@ export const resolveConfig = async (): Promise<HonchoExtensionConfig> => {
     maxMessageLength,
     searchLimit,
     toolPreviewLength,
+    globalQuery,
   };
 };
 
