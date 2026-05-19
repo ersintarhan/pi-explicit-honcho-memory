@@ -10,11 +10,11 @@ Explicit-load memory extension for [pi](https://pi.dev) using [Honcho](https://h
 ## Features
 
 - **Explicit memory loading** — use `/load-memory` to add cached Honcho user/project memory to the conversation once
-- **Refresh on demand** — use `/reload-memory` to fetch fresh Honcho context and replace the prior loaded memory block
+- **Refresh on demand** — use `/reload-memory` to fetch fresh Honcho context and generated session summaries, then replace the prior loaded memory block
 - **No automatic prompt injection** — memory is not appended to the system prompt on every turn
 - **Conversational persistence** — user/assistant messages saved to Honcho after each agent response
 - **Flexible session strategies** — choose repo, git-branch, or directory scoped memory
-- **LLM tools** — `honcho_search`, `honcho_chat`, `honcho_remember` for active memory operations
+- **LLM tools** — `honcho_search`, `honcho_chat`, `honcho_session_summary`, and `honcho_remember` for active memory operations
 - **Graceful degradation** — pi works normally if Honcho is unavailable
 
 ## Install
@@ -84,13 +84,18 @@ All numeric options must be positive integers. Invalid values fall back to defau
 
 | Tool              | Description                                                    |
 | ----------------- | -------------------------------------------------------------- |
-| `honcho_search`   | Search persistent memory for prior conversations and decisions |
-| `honcho_chat`     | Ask Honcho to reason over memory for deeper questions          |
-| `honcho_remember` | Save a durable fact, preference, or decision                   |
+| `honcho_search`          | Search persistent memory for prior conversations and decisions |
+| `honcho_chat`            | Ask Honcho to reason over memory for deeper questions          |
+| `honcho_session_summary` | Fetch the generated summary for the current or a specific session |
+| `honcho_remember`        | Save a durable fact, preference, or decision                   |
 
 By default, `honcho_search` and `honcho_chat` are current-session scoped.
 
-Both tools also accept an optional `global` boolean parameter. When `global: true`, the tool will query broader workspace/global memory instead of passing the current session.
+Both tools also accept:
+- `global?: boolean` — when `true`, query broader workspace/global memory instead of the current session
+- `sessionId?: string` — when provided, query that exact Honcho session
+
+`sessionId` takes precedence over `global`.
 
 Examples:
 
@@ -99,7 +104,7 @@ Examples:
 ```
 
 ```json
-{ "query": "MemU'nun .NET'e portundaki zorluklar nelerdir?", "global": true, "reasoningLevel": "low" }
+{ "query": "MemU'nun .NET'e portundaki zorluklar nelerdir?", "sessionId": "repo_NevaMind-AI_memU", "reasoningLevel": "low" }
 ```
 
 ## Commands
@@ -127,7 +132,7 @@ Examples:
 /reload-memory
 ```
 
-5. Use `honcho_search`, `honcho_chat`, and `honcho_remember` for deeper or explicit memory operations.
+5. Use `honcho_search`, `honcho_chat`, `honcho_session_summary`, and `honcho_remember` for deeper or explicit memory operations.
 
 ## Contributing
 

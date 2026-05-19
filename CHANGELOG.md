@@ -10,6 +10,9 @@
 - Update source imports and peer dependencies from `@mariozechner/*` to `@earendil-works/*`.
 - Switch `honcho_search` previews from head-only truncation to `400 head + 400 tail` formatting by default.
 - Add an optional `global` boolean parameter to `honcho_search` and `honcho_chat`. It defaults to `false`; when set to `true`, the tools query broader workspace/global memory instead of the current session.
+- Add optional `sessionId` parameters to `honcho_search` and `honcho_chat` for deterministic session-scoped retrieval.
+- Add `honcho_session_summary` for direct access to the generated summary of the current or a specified session.
+- Change `/load-memory` and `/reload-memory` cache refresh to read session summaries from the dedicated summaries endpoint instead of relying on token-budget-sensitive `session.context(..., summary=true)` output.
 
 ## 0.1.0
 

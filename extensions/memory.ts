@@ -22,6 +22,11 @@ interface CachedHonchoContext {
   summary?: { content?: string | null } | null;
 }
 
+interface CachedSummarySource {
+  shortSummary?: { content?: string | null } | null;
+  longSummary?: { content?: string | null } | null;
+}
+
 const EMPTY_MEMORY: CachedMemoryParts = {
   userProfile: null,
   projectSummary: null,
@@ -50,9 +55,21 @@ const normalizeMemoryText = (value?: string | null): string | null => {
   return trimmed;
 };
 
+const pickSummaryText = (source: CachedSummarySource | CachedHonchoContext): string | null => {
+  if ("shortSummary" in source || "longSummary" in source) {
+    return (
+      normalizeMemoryText(source.shortSummary?.content) ??
+      normalizeMemoryText(source.longSummary?.content) ??
+      null
+    );
+  }
+
+  return normalizeMemoryText(source.summary?.content);
+};
+
 export const buildCachedMemoryParts = (context: CachedHonchoContext): CachedMemoryParts => ({
   userProfile: normalizeMemoryText(context.peerRepresentation),
-  projectSummary: normalizeMemoryText(context.summary?.content),
+  projectSummary: pickSummaryText(context),
 });
 
 export const buildUserProfileText = (userProfile: string | null): string | null =>
@@ -136,14 +153,23 @@ export const flushPending = (): Promise<void> => pendingSave;
  */
 export const refreshMemoryCache = async (handles: HonchoHandles): Promise<void> => {
   try {
-    const ctx = await handles.session.context({
-      summary: true,
-      peerPerspective: handles.aiPeer,
-      peerTarget: handles.userPeer,
-      tokens: handles.config.contextTokens,
-    });
+    const [ctx, summaries] = await Promise.all([
+      handles.session.context({
+        summary: false,
+        peerPerspective: handles.aiPeer,
+        peerTarget: handles.userPeer,
+        tokens: handles.config.contextTokens,
+      }),
+      handles.session.summaries(),
+    ]);
 
-    cachedMemory = buildCachedMemoryParts(ctx);
+    cachedMemory = {
+      userProfile: normalizeMemoryText(ctx.peerRepresentation),
+      projectSummary:
+        normalizeMemoryText(summaries.shortSummary?.content) ??
+        normalizeMemoryText(summaries.longSummary?.content) ??
+        null,
+    };
   } catch (err) {
     // Keep stale cache on failure rather than clearing it.
     throw err;

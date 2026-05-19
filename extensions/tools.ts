@@ -31,6 +31,17 @@ const formatResults = (
     .map((mem, idx) => `${idx + 1}. [${mem.peerId}] ${formatPreview(mem.content, previewLength)}`)
     .join("\n\n");
 
+const resolveSession = async (
+  handles: HonchoHandles,
+  sessionId: string | undefined,
+): Promise<HonchoHandles["session"] | undefined> => {
+  if (!sessionId) {
+    return undefined;
+  }
+
+  return handles.honcho.session(sessionId);
+};
+
 // eslint-disable-next-line import/prefer-default-export
 export const registerTools = (pi: ExtensionAPI): void => {
   // --- honcho_search ---
@@ -47,6 +58,11 @@ export const registerTools = (pi: ExtensionAPI): void => {
     ],
     parameters: Type.Object({
       query: Type.String({ description: "Search query" }),
+      sessionId: Type.Optional(
+        Type.String({
+          description: "Specific Honcho session ID to search within",
+        }),
+      ),
       global: Type.Optional(
         Type.Boolean({
           description:
@@ -57,13 +73,18 @@ export const registerTools = (pi: ExtensionAPI): void => {
     async execute(_toolCallId, params, _signal, _onUpdate, _ctx) {
       const handles = ensureConnected();
 
-      const results = params.global === true
-        ? await handles.honcho.search(params.query, {
+      const explicitSession = await resolveSession(handles, params.sessionId);
+      const results = explicitSession
+        ? await explicitSession.search(params.query, {
             limit: handles.config.searchLimit,
           })
-        : await handles.session.search(params.query, {
-            limit: handles.config.searchLimit,
-          });
+        : params.global === true
+          ? await handles.honcho.search(params.query, {
+              limit: handles.config.searchLimit,
+            })
+          : await handles.session.search(params.query, {
+              limit: handles.config.searchLimit,
+            });
 
       if (results.length === 0) {
         return {
@@ -100,6 +121,11 @@ export const registerTools = (pi: ExtensionAPI): void => {
     promptGuidelines: ["Use honcho_chat for reasoning over memory, not simple lookup."],
     parameters: Type.Object({
       query: Type.String({ description: "Question to reason over" }),
+      sessionId: Type.Optional(
+        Type.String({
+          description: "Specific Honcho session ID to reason over",
+        }),
+      ),
       global: Type.Optional(
         Type.Boolean({
           description:
@@ -114,6 +140,7 @@ export const registerTools = (pi: ExtensionAPI): void => {
     async execute(_toolCallId, params, _signal, _onUpdate, _ctx) {
       const handles = ensureConnected();
 
+      const explicitSession = await resolveSession(handles, params.sessionId);
       const chatOptions: {
         target: HonchoHandles["userPeer"];
         session?: HonchoHandles["session"];
@@ -122,7 +149,9 @@ export const registerTools = (pi: ExtensionAPI): void => {
         target: handles.userPeer,
         reasoningLevel: params.reasoningLevel ?? "low",
       };
-      if (params.global !== true) {
+      if (explicitSession) {
+        chatOptions.session = explicitSession;
+      } else if (params.global !== true) {
         chatOptions.session = handles.session;
       }
 
@@ -143,6 +172,47 @@ export const registerTools = (pi: ExtensionAPI): void => {
       return {
         content: [{ type: "text" as const, text: result }],
         details: {},
+      };
+    },
+  });
+
+  // --- honcho_session_summary ---
+  pi.registerTool({
+    name: "honcho_session_summary",
+    label: "Honcho Session Summary",
+    description: "Fetch the generated summary for a specific Honcho session or the current session",
+    promptSnippet: "Fetch the generated summary for a specific Honcho session or the current session",
+    promptGuidelines: [
+      "Use honcho_session_summary when you need deterministic access to a session summary.",
+    ],
+    parameters: Type.Object({
+      sessionId: Type.Optional(
+        Type.String({
+          description: "Specific Honcho session ID to fetch the summary for",
+        }),
+      ),
+    }),
+    async execute(_toolCallId, params) {
+      const handles = ensureConnected();
+      const session = (await resolveSession(handles, params.sessionId)) ?? handles.session;
+      const summaries = await session.summaries();
+      const summary = summaries.shortSummary ?? summaries.longSummary;
+
+      if (!summary) {
+        return {
+          content: [{ type: "text" as const, text: "No summary is available for this session." }],
+          details: { sessionId: session.id },
+        };
+      }
+
+      return {
+        content: [{ type: "text" as const, text: summary.content }],
+        details: {
+          sessionId: session.id,
+          summaryType: summary.summaryType,
+          tokenCount: summary.tokenCount,
+          createdAt: summary.createdAt,
+        },
       };
     },
   });
