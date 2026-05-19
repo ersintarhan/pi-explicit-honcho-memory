@@ -2,7 +2,8 @@
 
 Explicit-load memory extension for [pi](https://pi.dev) using [Honcho](https://honcho.dev).
 
-![NPM Version](https://img.shields.io/npm/v/%40ersintarhan%2Fpi-explicit-honcho-memory)
+[![NPM Version](https://img.shields.io/npm/v/%40ersintarhan%2Fpi-explicit-honcho-memory)](https://www.npmjs.com/package/@ersintarhan/pi-explicit-honcho-memory)
+[![NPM Downloads](https://img.shields.io/npm/dm/%40ersintarhan%2Fpi-explicit-honcho-memory)](https://www.npmjs.com/package/@ersintarhan/pi-explicit-honcho-memory)
 
 > [!NOTE]
 > This repo is a fork of `@agney/pi-honcho-memory` and now implements an explicit `/load-memory` flow. Honcho memory is cached at session start, but it is only added to LLM context when you explicitly request it.
