@@ -10,7 +10,7 @@ Explicit-load memory extension for [pi](https://pi.dev) using [Honcho](https://h
 ## Features
 
 - **Explicit memory loading** — use `/load-memory` to add cached Honcho user/project memory to the conversation once
-- **Refresh on demand** — use `/reload-memory` to fetch fresh Honcho context and generated session summaries, then replace the prior loaded memory block
+- **Refresh on demand** — use `/reload-memory` to fetch fresh Honcho context plus the generated session summary from the dedicated summaries endpoint, then replace the prior loaded memory block
 - **No automatic prompt injection** — memory is not appended to the system prompt on every turn
 - **Conversational persistence** — user/assistant messages saved to Honcho after each agent response
 - **Flexible session strategies** — choose repo, git-branch, or directory scoped memory
@@ -31,7 +31,7 @@ pi -e npm:@ersintarhan/pi-explicit-honcho-memory
 
 ## Setup
 
-1. Get an API key from [honcho.dev](https://honcho.dev)
+1. Get a Honcho API key from your Honcho deployment/admin API (or Honcho Cloud if you use it)
 2. Run `/honcho-setup` inside pi to configure interactively
 
 Or set environment variables:
@@ -133,6 +133,12 @@ Examples:
 ```
 
 5. Use `honcho_search`, `honcho_chat`, `honcho_session_summary`, and `honcho_remember` for deeper or explicit memory operations.
+
+Example deterministic summary fetch:
+
+```json
+{ "sessionId": "repo_NevaMind-AI_memU" }
+```
 
 ## Contributing
 

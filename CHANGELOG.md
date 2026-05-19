@@ -16,6 +16,9 @@
 
 ## 0.1.0
 
+> Inherited upstream release history from `@agney/pi-honcho-memory` before this fork was reworked into `pi-explicit-honcho-memory`.
+
+
 ### Minor Changes
 
 - a0cd5c7: Add configurable Honcho memory tuning options for injected context tokens, synced message length, search result limits, and preview lengths. Also relabel the injected repo-wide summary as a project summary and document the available config and environment variable mappings in the README.
