@@ -13,12 +13,22 @@ const ensureConnected = (): HonchoHandles => {
   return handles;
 };
 
+const formatPreview = (content: string, previewLength: number): string => {
+  if (content.length <= previewLength * 2) {
+    return content;
+  }
+
+  const head = content.slice(0, previewLength);
+  const tail = content.slice(-previewLength);
+  return `${head}\n…\n${tail}`;
+};
+
 const formatResults = (
   results: { peerId: string; content: string }[],
   previewLength: number,
 ): string =>
   results
-    .map((mem, idx) => `${idx + 1}. [${mem.peerId}] ${mem.content.slice(0, previewLength)}`)
+    .map((mem, idx) => `${idx + 1}. [${mem.peerId}] ${formatPreview(mem.content, previewLength)}`)
     .join("\n\n");
 
 // eslint-disable-next-line import/prefer-default-export

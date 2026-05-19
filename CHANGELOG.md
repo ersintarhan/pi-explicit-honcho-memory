@@ -8,6 +8,7 @@
 - Keep only the latest loaded memory block in future LLM context to avoid duplicate memory injections.
 - Skip re-uploading explicit `<pi_memory_context>` blocks back into Honcho conversation memory.
 - Update source imports and peer dependencies from `@mariozechner/*` to `@earendil-works/*`.
+- Switch `honcho_search` previews from head-only truncation to `400 head + 400 tail` formatting by default.
 
 ## 0.1.0
 

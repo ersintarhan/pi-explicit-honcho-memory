@@ -7,7 +7,7 @@ export type HonchoSessionStrategy = "repo" | "git-branch" | "directory";
 export const DEFAULT_CONTEXT_TOKENS = 1200;
 export const DEFAULT_MAX_MESSAGE_LENGTH = 8000;
 export const DEFAULT_SEARCH_LIMIT = 8;
-export const DEFAULT_TOOL_PREVIEW_LENGTH = 500;
+export const DEFAULT_TOOL_PREVIEW_LENGTH = 400;
 
 export interface HonchoExtensionConfig {
   enabled: boolean;

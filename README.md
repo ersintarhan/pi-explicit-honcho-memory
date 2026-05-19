@@ -76,7 +76,7 @@ Config file properties (`~/.honcho/config.json`):
 | `hosts.pi.contextTokens`     | `HONCHO_CONTEXT_TOKENS`      | Token budget requested from Honcho when refreshing cached memory       | `1200`             |
 | `hosts.pi.maxMessageLength`  | `HONCHO_MAX_MESSAGE_LENGTH`  | Maximum length of a synced user/assistant message before it is skipped | `8000`             |
 | `hosts.pi.searchLimit`       | `HONCHO_SEARCH_LIMIT`        | Maximum number of search results returned by `honcho_search`           | `8`                |
-| `hosts.pi.toolPreviewLength` | `HONCHO_TOOL_PREVIEW_LENGTH` | Character preview length per search result returned by `honcho_search` | `500`              |
+| `hosts.pi.toolPreviewLength` | `HONCHO_TOOL_PREVIEW_LENGTH` | Head/tail preview length per search result returned by `honcho_search` | `400`              |
 
 All numeric options must be positive integers. Invalid values fall back to defaults.
 

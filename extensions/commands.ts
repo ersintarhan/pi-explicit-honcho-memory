@@ -102,7 +102,7 @@ const buildStatusLines = (
   lines.push(`Context toks: ${config.contextTokens}`);
   lines.push(`Msg max len:  ${config.maxMessageLength}`);
   lines.push(`Search limit: ${config.searchLimit}`);
-  lines.push(`Tool preview: ${config.toolPreviewLength}`);
+  lines.push(`Tool preview: ${config.toolPreviewLength}+${config.toolPreviewLength}`);
 
   if (handles) {
     lines.push(`Session key:  ${handles.sessionKey}`);
