@@ -47,11 +47,17 @@ export const registerTools = (pi: ExtensionAPI): void => {
     ],
     parameters: Type.Object({
       query: Type.String({ description: "Search query" }),
+      global: Type.Optional(
+        Type.Boolean({
+          description:
+            "When true, search broader workspace memory instead of only the current session",
+        }),
+      ),
     }),
     async execute(_toolCallId, params, _signal, _onUpdate, _ctx) {
       const handles = ensureConnected();
 
-      const results = handles.config.globalQuery
+      const results = params.global === true
         ? await handles.honcho.search(params.query, {
             limit: handles.config.searchLimit,
           })
@@ -94,6 +100,12 @@ export const registerTools = (pi: ExtensionAPI): void => {
     promptGuidelines: ["Use honcho_chat for reasoning over memory, not simple lookup."],
     parameters: Type.Object({
       query: Type.String({ description: "Question to reason over" }),
+      global: Type.Optional(
+        Type.Boolean({
+          description:
+            "When true, reason over broader workspace memory instead of only the current session",
+        }),
+      ),
       // eslint-disable-next-line new-cap
       reasoningLevel: Type.Optional(
         StringEnum(["minimal", "low", "medium", "high", "max"] as const), // eslint-disable-line new-cap
@@ -110,7 +122,7 @@ export const registerTools = (pi: ExtensionAPI): void => {
         target: handles.userPeer,
         reasoningLevel: params.reasoningLevel ?? "low",
       };
-      if (!handles.config.globalQuery) {
+      if (params.global !== true) {
         chatOptions.session = handles.session;
       }
 
