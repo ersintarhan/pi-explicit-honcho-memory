@@ -244,8 +244,9 @@ export const saveMessages = (
         return handles.aiPeer.message(pair.text);
       });
       await handles.session.addMessages(honchoMessages);
-    } catch {
-      // Non-fatal: message save failed, will retry on next turn
+    } catch (err) {
+      console.error("[pi-explicit-honcho-memory] saveMessages failed:", err);
+      throw err;
     }
   });
 };

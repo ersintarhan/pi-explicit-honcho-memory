@@ -43,6 +43,14 @@ const setStatus = (
   ctx.ui.setStatus("honcho", labels[state]);
 };
 
+const flushPendingSafely = async (): Promise<void> => {
+  try {
+    await flushPending();
+  } catch (err) {
+    console.error("[pi-explicit-honcho-memory] flushPending failed:", err);
+  }
+};
+
 export default function honcho(pi: ExtensionAPI): void {
   registerTools(pi);
   registerCommands(pi);
@@ -112,18 +120,18 @@ export default function honcho(pi: ExtensionAPI): void {
   });
 
   pi.on("session_before_compact", async () => {
-    await flushPending();
+    await flushPendingSafely();
   });
 
   pi.on("session_before_switch", async () => {
-    await flushPending();
+    await flushPendingSafely();
   });
 
   pi.on("session_before_fork", async () => {
-    await flushPending();
+    await flushPendingSafely();
   });
 
   pi.on("session_shutdown", async () => {
-    await flushPending();
+    await flushPendingSafely();
   });
 }
