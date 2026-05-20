@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   getSessionStrategyLabel,
+  MAX_CONTEXT_TOKENS,
+  MAX_SEARCH_LIMIT,
+  MAX_TOOL_PREVIEW_LENGTH,
   normalizePositiveInteger,
   normalizeSessionStrategy,
 } from "../extensions/config.ts";
@@ -35,5 +38,13 @@ describe("config helpers", () => {
     expect(normalizePositiveInteger("abc", 7)).toBe(7);
     expect(normalizePositiveInteger("1.5", 7)).toBe(7);
     expect(normalizePositiveInteger(undefined, 7)).toBe(7);
+  });
+
+  it("caps numeric settings at the configured maximum", () => {
+    expect(normalizePositiveInteger(999999, 7, MAX_CONTEXT_TOKENS)).toBe(MAX_CONTEXT_TOKENS);
+    expect(normalizePositiveInteger("999999", 7, MAX_SEARCH_LIMIT)).toBe(MAX_SEARCH_LIMIT);
+    expect(normalizePositiveInteger(999999, 7, MAX_TOOL_PREVIEW_LENGTH)).toBe(
+      MAX_TOOL_PREVIEW_LENGTH,
+    );
   });
 });

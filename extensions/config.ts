@@ -9,6 +9,11 @@ export const DEFAULT_MAX_MESSAGE_LENGTH = 8000;
 export const DEFAULT_SEARCH_LIMIT = 8;
 export const DEFAULT_TOOL_PREVIEW_LENGTH = 400;
 
+export const MAX_CONTEXT_TOKENS = 16000;
+export const MAX_MAX_MESSAGE_LENGTH = 100000;
+export const MAX_SEARCH_LIMIT = 50;
+export const MAX_TOOL_PREVIEW_LENGTH = 4000;
+
 export interface HonchoExtensionConfig {
   enabled: boolean;
   apiKey?: string;
@@ -94,19 +99,20 @@ const isSessionStrategy = (value: string): value is HonchoSessionStrategy =>
 export const normalizePositiveInteger = (
   value: number | string | null | undefined,
   fallback: number,
+  max?: number,
 ): number => {
-  if (typeof value === "number" && Number.isInteger(value) && value > 0) {
-    return value;
-  }
+  let normalized = fallback;
 
-  if (typeof value === "string" && value.trim()) {
+  if (typeof value === "number" && Number.isInteger(value) && value > 0) {
+    normalized = value;
+  } else if (typeof value === "string" && value.trim()) {
     const parsed = Number(value);
     if (Number.isInteger(parsed) && parsed > 0) {
-      return parsed;
+      normalized = parsed;
     }
   }
 
-  return fallback;
+  return max !== undefined ? Math.min(normalized, max) : normalized;
 };
 
 export const readConfigFile = async (): Promise<ConfigFile | null> => {
@@ -158,18 +164,22 @@ export const resolveConfig = async (): Promise<HonchoExtensionConfig> => {
   const contextTokens = normalizePositiveInteger(
     process.env.HONCHO_CONTEXT_TOKENS || piHost?.contextTokens,
     DEFAULT_CONTEXT_TOKENS,
+    MAX_CONTEXT_TOKENS,
   );
   const maxMessageLength = normalizePositiveInteger(
     process.env.HONCHO_MAX_MESSAGE_LENGTH || piHost?.maxMessageLength,
     DEFAULT_MAX_MESSAGE_LENGTH,
+    MAX_MAX_MESSAGE_LENGTH,
   );
   const searchLimit = normalizePositiveInteger(
     process.env.HONCHO_SEARCH_LIMIT || piHost?.searchLimit,
     DEFAULT_SEARCH_LIMIT,
+    MAX_SEARCH_LIMIT,
   );
   const toolPreviewLength = normalizePositiveInteger(
     process.env.HONCHO_TOOL_PREVIEW_LENGTH || piHost?.toolPreviewLength,
     DEFAULT_TOOL_PREVIEW_LENGTH,
+    MAX_TOOL_PREVIEW_LENGTH,
   );
 
   return {

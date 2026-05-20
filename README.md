@@ -79,7 +79,7 @@ Config file properties (`~/.honcho/config.json`):
 | `hosts.pi.searchLimit`       | `HONCHO_SEARCH_LIMIT`        | Maximum number of search results returned by `honcho_search`           | `8`                |
 | `hosts.pi.toolPreviewLength` | `HONCHO_TOOL_PREVIEW_LENGTH` | Head/tail preview length per search result returned by `honcho_search` | `400`              |
 
-All numeric options must be positive integers. Invalid values fall back to defaults.
+All numeric options must be positive integers. Invalid values fall back to defaults. Extremely large values are clamped to safe upper bounds.
 
 ## Tools
 
