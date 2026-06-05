@@ -1,5 +1,18 @@
 # @ersintarhan/pi-explicit-honcho-memory
 
+## 0.1.1
+
+### Patch Changes
+
+- c7e19d0: Improve Honcho retrieval and summary loading.
+
+  - add `sessionId` support to `honcho_search` and `honcho_chat` for deterministic session-scoped recall
+  - add `honcho_session_summary` to fetch the generated summary for the current or a specific session
+  - load session summaries from the dedicated summaries endpoint during `/reload-memory`
+  - keep `honcho_search` previews in `400 head + 400 tail` format
+  - polish docs and GitHub/CI publishing setup
+  - update project dependencies to their latest stable versions and resolve all lint and formatting warnings
+
 ## Unreleased
 
 - Forked from `@agney/pi-honcho-memory` as the base for an explicit `/load-memory` Honcho extension.
