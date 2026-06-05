@@ -1,6 +1,6 @@
 {
   "name": "@ersintarhan/pi-explicit-honcho-memory",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Explicit-load Honcho memory extension for pi coding agent",
   "keywords": [
     "pi-package"
