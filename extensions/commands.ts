@@ -195,6 +195,7 @@ const getBranchEntries = (sessionManager: unknown): unknown[] => {
     return [];
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
   const maybeSessionManager = sessionManager as SessionManagerLike;
   return typeof maybeSessionManager.getBranch === "function" ? maybeSessionManager.getBranch() : [];
 };
@@ -210,13 +211,19 @@ const loadMemoryIntoConversation = async (
   }
 
   if (!forceRefresh && getLatestLoadedMemoryEntry(getBranchEntries(ctx.sessionManager))) {
-    ctx.ui.notify("Memory is already loaded for this branch. Use /reload-memory to refresh.", "info");
+    ctx.ui.notify(
+      "Memory is already loaded for this branch. Use /reload-memory to refresh.",
+      "info",
+    );
     return;
   }
 
   const handles = getHandles();
   if (!handles) {
-    ctx.ui.notify("Honcho is not connected yet. Run /honcho-setup or wait for startup to finish.", "warning");
+    ctx.ui.notify(
+      "Honcho is not connected yet. Run /honcho-setup or wait for startup to finish.",
+      "warning",
+    );
     return;
   }
 
@@ -247,7 +254,9 @@ const loadMemoryIntoConversation = async (
   });
 
   ctx.ui.notify(
-    forceRefresh ? "Memory reloaded into the conversation." : "Memory loaded into the conversation.",
+    forceRefresh
+      ? "Memory reloaded into the conversation."
+      : "Memory loaded into the conversation.",
     "info",
   );
 };

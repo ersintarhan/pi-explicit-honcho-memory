@@ -94,7 +94,7 @@ export default function honcho(pi: ExtensionAPI): void {
     }
 
     if (lastIndex === -1) {
-      return;
+      return undefined;
     }
 
     return {

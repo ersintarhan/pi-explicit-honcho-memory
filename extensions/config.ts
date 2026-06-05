@@ -77,7 +77,9 @@ const normalizeBaseURL = (
     try {
       return new URL(fromEnv).toString();
     } catch {
-      console.error(`[pi-explicit-honcho-memory] ignoring invalid HONCHO_URL=${JSON.stringify(envValue)}`);
+      console.error(
+        `[pi-explicit-honcho-memory] ignoring invalid HONCHO_URL=${JSON.stringify(envValue)}`,
+      );
     }
   }
 
@@ -86,7 +88,9 @@ const normalizeBaseURL = (
     try {
       return new URL(fromFile).toString();
     } catch {
-      console.error(`[pi-explicit-honcho-memory] ignoring invalid Honcho config endpoint=${JSON.stringify(fileValue)}`);
+      console.error(
+        `[pi-explicit-honcho-memory] ignoring invalid Honcho config endpoint=${JSON.stringify(fileValue)}`,
+      );
     }
   }
 
@@ -154,9 +158,13 @@ export const resolveConfig = async (): Promise<HonchoExtensionConfig> => {
   const enabled = enabledEnv !== undefined ? enabledEnv === "true" : Boolean(apiKey);
 
   const baseURL = normalizeBaseURL(process.env.HONCHO_URL, piHost?.endpoint);
-  const workspaceId = normalizeOptionalString(process.env.HONCHO_WORKSPACE_ID) || piHost?.workspace || "pi";
+  const workspaceId =
+    normalizeOptionalString(process.env.HONCHO_WORKSPACE_ID) || piHost?.workspace || "pi";
   const userPeerId =
-    normalizeOptionalString(process.env.HONCHO_PEER_NAME) || file?.peerName || userInfo().username || "user";
+    normalizeOptionalString(process.env.HONCHO_PEER_NAME) ||
+    file?.peerName ||
+    userInfo().username ||
+    "user";
   const aiPeerId = normalizeOptionalString(process.env.HONCHO_AI_PEER) || piHost?.aiPeer || "pi";
   const sessionStrategy = normalizeSessionStrategy(
     process.env.HONCHO_SESSION_STRATEGY || piHost?.sessionStrategy,

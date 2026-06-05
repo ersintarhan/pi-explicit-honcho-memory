@@ -9,3 +9,4 @@ Improve Honcho retrieval and summary loading.
 - load session summaries from the dedicated summaries endpoint during `/reload-memory`
 - keep `honcho_search` previews in `400 head + 400 tail` format
 - polish docs and GitHub/CI publishing setup
+- update project dependencies to their latest stable versions and resolve all lint and formatting warnings

@@ -83,16 +83,17 @@ All numeric options must be positive integers. Invalid values fall back to defau
 
 ## Tools
 
-| Tool              | Description                                                    |
-| ----------------- | -------------------------------------------------------------- |
-| `honcho_search`          | Search persistent memory for prior conversations and decisions |
-| `honcho_chat`            | Ask Honcho to reason over memory for deeper questions          |
+| Tool                     | Description                                                       |
+| ------------------------ | ----------------------------------------------------------------- |
+| `honcho_search`          | Search persistent memory for prior conversations and decisions    |
+| `honcho_chat`            | Ask Honcho to reason over memory for deeper questions             |
 | `honcho_session_summary` | Fetch the generated summary for the current or a specific session |
-| `honcho_remember`        | Save a durable fact, preference, or decision                   |
+| `honcho_remember`        | Save a durable fact, preference, or decision                      |
 
 By default, `honcho_search` and `honcho_chat` are current-session scoped.
 
 Both tools also accept:
+
 - `global?: boolean` — when `true`, query broader workspace/global memory instead of the current session
 - `sessionId?: string` — when provided, query that exact Honcho session
 
@@ -105,17 +106,21 @@ Examples:
 ```
 
 ```json
-{ "query": "MemU'nun .NET'e portundaki zorluklar nelerdir?", "sessionId": "repo_NevaMind-AI_memU", "reasoningLevel": "low" }
+{
+  "query": "MemU'nun .NET'e portundaki zorluklar nelerdir?",
+  "sessionId": "repo_NevaMind-AI_memU",
+  "reasoningLevel": "low"
+}
 ```
 
 ## Commands
 
-| Command          | Description                                                        |
-| ---------------- | ------------------------------------------------------------------ |
-| `/honcho-status` | Show connection status, cache info, and whether memory is loaded   |
-| `/honcho-setup`  | Interactive configuration wizard                                   |
-| `/load-memory`   | Load cached Honcho user/project memory into the current session    |
-| `/reload-memory` | Refresh Honcho memory and replace the loaded conversation block    |
+| Command          | Description                                                      |
+| ---------------- | ---------------------------------------------------------------- |
+| `/honcho-status` | Show connection status, cache info, and whether memory is loaded |
+| `/honcho-setup`  | Interactive configuration wizard                                 |
+| `/load-memory`   | Load cached Honcho user/project memory into the current session  |
+| `/reload-memory` | Refresh Honcho memory and replace the loaded conversation block  |
 
 ## Workflow
 

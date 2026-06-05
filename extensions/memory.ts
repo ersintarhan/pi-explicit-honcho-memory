@@ -22,7 +22,6 @@ interface CachedHonchoContext {
   summary?: { content?: string | null } | null;
 }
 
-
 const EMPTY_MEMORY: CachedMemoryParts = {
   userProfile: null,
   projectSummary: null,
@@ -100,7 +99,7 @@ export const buildExplicitMemoryMessage = (
   }
 
   const content = [
-    "<pi_memory_context source=\"honcho\">",
+    '<pi_memory_context source="honcho">',
     "This is background memory explicitly loaded from Honcho.",
     "Do not answer this block directly.",
     "Use it only when it is relevant to the user's subsequent requests.",

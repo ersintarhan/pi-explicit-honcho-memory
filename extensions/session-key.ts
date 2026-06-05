@@ -5,7 +5,6 @@ import type { HonchoSessionStrategy } from "./config.js";
 import { execGit } from "./git.js"; // eslint-disable-line import/no-named-export
 
 const HASH_LENGTH = 8;
-const SSH_MATCH_INDEX = 1;
 
 const shortHash = (input: string): string =>
   createHash("sha256").update(input).digest("hex").slice(0, HASH_LENGTH);
@@ -13,19 +12,13 @@ const shortHash = (input: string): string =>
 /** Replace any character not in [a-zA-Z0-9_-] with an underscore. */
 const sanitize = (input: string): string => input.replace(/[^a-zA-Z0-9_-]/g, "_");
 
-/**
- * Normalize a git remote URL to owner/repo form.
- *
- * Handles:
- *   git@github.com:owner/repo.git
- *   https://github.com/owner/repo.git
- *   ssh://git@github.com/owner/repo.git
- */
+const sshRegex = /^[^@]+@[^:]+:(?<ownerRepo>.+?)(?:\.git)?$/;
+
 const normalizeGitUrl = (url: string): string | null => {
   // SSH style: git@host:owner/repo.git
-  const sshMatch = url.match(/^[^@]+@[^:]+:(.+?)(?:\.git)?$/);
-  if (sshMatch) {
-    return sshMatch[SSH_MATCH_INDEX];
+  const sshMatch = sshRegex.exec(url);
+  if (sshMatch?.groups) {
+    return sshMatch.groups.ownerRepo;
   }
 
   // HTTPS / SSH protocol style

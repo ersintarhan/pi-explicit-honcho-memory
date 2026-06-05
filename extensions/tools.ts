@@ -184,7 +184,8 @@ export const registerTools = (pi: ExtensionAPI): void => {
     name: "honcho_session_summary",
     label: "Honcho Session Summary",
     description: "Fetch the generated summary for a specific Honcho session or the current session",
-    promptSnippet: "Fetch the generated summary for a specific Honcho session or the current session",
+    promptSnippet:
+      "Fetch the generated summary for a specific Honcho session or the current session",
     promptGuidelines: [
       "Use honcho_session_summary when you need deterministic access to a session summary.",
     ],
